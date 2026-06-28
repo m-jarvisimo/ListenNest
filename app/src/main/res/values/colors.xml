@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ln_background">#0E0F14</color>
+    <color name="ln_surface">#171923</color>
+    <color name="ln_primary">#9C7BFF</color>
+</resources>
