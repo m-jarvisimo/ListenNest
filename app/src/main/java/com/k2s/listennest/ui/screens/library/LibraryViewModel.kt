@@ -72,7 +72,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun scanLibrary() {
+    fun scanLibrary(onScanComplete: () -> Unit = {}) {
         val rootUriString = _uiState.value.selectedFolderUri
         if (rootUriString.isNullOrBlank()) {
             _uiState.update { it.copy(statusMessage = SELECT_A_FOLDER_PROMPT) }
@@ -124,6 +124,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                     },
                 )
             }
+            onScanComplete()
         }
     }
 
@@ -147,7 +148,26 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun saveSelectedBooks() {
+    fun selectAllDiscoveredBooks() {
+        _uiState.update { current ->
+            val allFolderUris = current.discoveredBooks.mapTo(mutableSetOf()) { it.folderUri }
+            current.copy(
+                pendingSelectionUris = allFolderUris,
+                discoveredBooks = current.discoveredBooks.map { it.copy(isSelected = true) },
+            )
+        }
+    }
+
+    fun clearSelectedDiscoveredBooks() {
+        _uiState.update { current ->
+            current.copy(
+                pendingSelectionUris = emptySet(),
+                discoveredBooks = current.discoveredBooks.map { it.copy(isSelected = false) },
+            )
+        }
+    }
+
+    fun saveSelectedBooks(onSaved: () -> Unit = {}) {
         val current = _uiState.value
         val folderUri = current.selectedFolderUri ?: return
         val folderLabel = current.selectedFolderLabel ?: "Selected folder"
@@ -173,6 +193,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                     statusMessage = "Saved ${savedBooks.size} book${if (savedBooks.size == 1) "" else "s"} to your library.",
                 )
             }
+            onSaved()
         }
     }
 
@@ -201,6 +222,24 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                 settingsStore.saveSelection(folderToPersist, folderLabelToPersist, updatedState.pendingSelectionUris)
             }
             _uiState.update { updatedState }
+        }
+    }
+
+    fun clearScanResults() {
+        _uiState.update { current ->
+            current.copy(
+                discoveredBooks = emptyList(),
+                pendingSelectionUris = emptySet(),
+                statusMessage = if (current.savedBooks.isEmpty()) {
+                    if (current.hasFolderSelected) {
+                        "Scan cancelled. Tap Scan library to discover books."
+                    } else {
+                        SELECT_A_FOLDER_PROMPT
+                    }
+                } else {
+                    "Scan cancelled."
+                },
+            )
         }
     }
 

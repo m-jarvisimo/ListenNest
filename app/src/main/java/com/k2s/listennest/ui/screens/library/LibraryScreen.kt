@@ -15,17 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,10 +38,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun LibraryScreen(
     viewModel: LibraryViewModel = viewModel(),
     onBookSelected: (LibraryBookItem) -> Unit = {},
+    onScanRequested: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val pendingRemovalBook = uiState.pendingRemovalBook
 
     val folderPickerLauncher = rememberLauncherForActivityResult(OpenDocumentTree()) { uri ->
         if (uri != null) {
@@ -61,28 +58,6 @@ fun LibraryScreen(
 
             viewModel.onFolderSelected(uri.toString(), folderLabel)
         }
-    }
-
-    if (pendingRemovalBook != null) {
-        AlertDialog(
-            onDismissRequest = viewModel::cancelRemoveBook,
-            title = { Text("Remove from library?") },
-            text = {
-                Text(
-                    text = "Remove \"${pendingRemovalBook.title}\" from your saved library? This does not delete the files from disk.",
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = viewModel::confirmRemoveBook) {
-                    Text("Remove")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::cancelRemoveBook) {
-                    Text("Cancel")
-                }
-            },
-        )
     }
 
     Column(
@@ -119,18 +94,10 @@ fun LibraryScreen(
                         Text("Choose folder")
                     }
                     OutlinedButton(
-                        onClick = viewModel::scanLibrary,
+                        onClick = { viewModel.scanLibrary(onScanComplete = onScanRequested) },
                         enabled = !uiState.isScanning && uiState.hasFolderSelected,
                     ) {
                         Text("Scan library")
-                    }
-                    if (uiState.hasDiscoveredBooks) {
-                        OutlinedButton(
-                            onClick = viewModel::saveSelectedBooks,
-                            enabled = !uiState.isScanning && uiState.pendingSelectionUris.isNotEmpty(),
-                        ) {
-                            Text("Save selected")
-                        }
                     }
                     if (uiState.isScanning) {
                         CircularProgressIndicator(
@@ -144,133 +111,80 @@ fun LibraryScreen(
 
         HorizontalDivider()
 
-        when {
-            uiState.hasDiscoveredBooks -> {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Discovered books",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = "Choose the books you want to keep in your library, then save them.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(uiState.discoveredBooks, key = { it.folderUri }) { book ->
-                            ElevatedCard(
+        if (uiState.hasSavedBooks) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = "Your library",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = "Tap a book to open it in the player, or remove it from your library.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(uiState.savedBooks, key = { it.folderUri }) { book ->
+                        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { viewModel.toggleBookSelection(book.folderUri) },
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.Top,
                             ) {
-                                Row(
+                                Column(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalAlignment = Alignment.Top,
+                                        .weight(1f)
+                                        .clickable { onBookSelected(book) },
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
-                                    Checkbox(
-                                        checked = book.isSelected,
-                                        onCheckedChange = { viewModel.toggleBookSelection(book.folderUri) },
+                                    Text(
+                                        text = book.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
                                     )
-                                    Column(
-                                        modifier = Modifier.weight(1f),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                                    ) {
-                                        Text(
-                                            text = book.title,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                        )
-                                        Text(
-                                            text = "${book.trackCount} audio file${if (book.trackCount == 1) "" else "s"}",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                        )
-                                        Text(
-                                            text = if (book.resumePositionMs > 0) {
-                                                val trackName = book.tracks.getOrNull(book.resumeTrackIndex)?.title ?: "track ${book.resumeTrackIndex + 1}"
-                                                "Resume saved at ${formatTime(book.resumePositionMs)} in $trackName"
-                                            } else {
-                                                "No resume position yet"
-                                            },
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                    }
+                                    Text(
+                                        text = "${book.trackCount} audio file${if (book.trackCount == 1) "" else "s"}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                    Text(
+                                        text = if (book.resumePositionMs > 0) {
+                                            val trackName = book.tracks.getOrNull(book.resumeTrackIndex)?.title ?: "track ${book.resumeTrackIndex + 1}"
+                                            "Resume saved at ${formatTime(book.resumePositionMs)} in $trackName"
+                                        } else {
+                                            "No resume position yet"
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
                                 }
-                            }
-                        }
-                        item { Spacer(modifier = Modifier.height(8.dp)) }
-                    }
-                }
-            }
-
-            uiState.hasSavedBooks -> {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Your library",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(uiState.savedBooks, key = { it.folderUri }) { book ->
-                            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalAlignment = Alignment.Top,
+                                OutlinedButton(
+                                    onClick = { viewModel.requestRemoveBook(book) },
                                 ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable { onBookSelected(book) },
-                                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                                    ) {
-                                        Text(
-                                            text = book.title,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                        )
-                                        Text(
-                                            text = "${book.trackCount} audio file${if (book.trackCount == 1) "" else "s"}",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                        )
-                                        Text(
-                                            text = if (book.resumePositionMs > 0) {
-                                                val trackName = book.tracks.getOrNull(book.resumeTrackIndex)?.title ?: "track ${book.resumeTrackIndex + 1}"
-                                                "Resume saved at ${formatTime(book.resumePositionMs)} in $trackName"
-                                            } else {
-                                                "No resume position yet"
-                                            },
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                    }
-                                    OutlinedButton(
-                                        onClick = { viewModel.requestRemoveBook(book) },
-                                    ) {
-                                        Text("Remove")
-                                    }
+                                    Text("Remove")
                                 }
                             }
                         }
-                        item { Spacer(modifier = Modifier.height(8.dp)) }
                     }
+                    item { Spacer(modifier = Modifier.height(8.dp)) }
                 }
             }
-
-            else -> {
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp),
+                        .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -281,10 +195,11 @@ fun LibraryScreen(
                             "No books imported yet."
                         },
                         style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = if (uiState.hasFolderSelected) {
-                            "Tap Scan library to rediscover books in the selected folder."
+                            "Scan the selected folder to discover books, then choose what to keep."
                         } else {
                             "Pick a folder containing audiobook folders, then scan."
                         },
