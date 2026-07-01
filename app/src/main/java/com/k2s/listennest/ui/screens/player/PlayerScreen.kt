@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -93,17 +94,18 @@ fun PlayerScreen(
                         modifier = Modifier
                             .align(Alignment.Center)
                             .clip(RoundedCornerShape(999.dp))
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.16f))
-                            .padding(8.dp),
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.10f))
+                            .padding(4.dp),
                     ) {
                         FloatingActionButton(
                             onClick = viewModel::togglePlayback,
+                            modifier = Modifier.size(52.dp),
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                         ) {
                             Text(
                                 text = if (uiState.isPlaying) "❚❚" else "▶",
-                                style = MaterialTheme.typography.headlineSmall,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                             )
                         }
