@@ -23,6 +23,7 @@ private const val SAVE_PROGRESS_THRESHOLD_MS = 5_000L
 data class PlayerUiState(
     val bookTitle: String = "No book selected",
     val folderUri: String = "",
+    val coverArtUri: String? = null,
     val tracks: List<String> = emptyList(),
     val currentTrackIndex: Int = 0,
     val positionMs: Long = 0L,
@@ -118,6 +119,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             it.copy(
                 bookTitle = book.title,
                 folderUri = book.folderUri,
+                coverArtUri = book.coverArtUri,
                 tracks = book.tracks.map { track -> track.title },
                 currentTrackIndex = resumeTrackIndex,
                 positionMs = resumePosition,

@@ -1,6 +1,7 @@
 package com.k2s.listennest.ui.screens.player
 
 import android.view.ViewGroup
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,10 +29,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.k2s.listennest.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.ui.PlayerView
 import com.k2s.listennest.ui.screens.library.LibraryBookItem
@@ -79,21 +82,10 @@ fun PlayerScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    AndroidView(
+                    Image(
+                        painter = painterResource(id = R.drawable.cover_art_fallback),
+                        contentDescription = "Book cover art fallback",
                         modifier = Modifier.fillMaxSize(),
-                        factory = { localContext ->
-                            PlayerView(localContext).apply {
-                                layoutParams = ViewGroup.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                )
-                                useController = false
-                                player = viewModel.playerForView()
-                            }
-                        },
-                        update = { playerView ->
-                            playerView.player = viewModel.playerForView()
-                        },
                     )
 
                     Box(

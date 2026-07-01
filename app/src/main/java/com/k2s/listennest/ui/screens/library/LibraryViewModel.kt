@@ -27,6 +27,7 @@ data class LibraryBookItem(
     val title: String,
     val folderUri: String,
     val tracks: List<LibraryTrackItem>,
+    val coverArtUri: String? = null,
     val resumeTrackIndex: Int = 0,
     val resumePositionMs: Long = 0L,
     val isSelected: Boolean = false,
