@@ -15,7 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -42,7 +41,35 @@ fun ScanReviewScreen(
     val discoveredBooks = uiState.discoveredBooks
     val selectedCount = uiState.pendingSelectionUris.size
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        bottomBar = {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (selectedCount == 0) {
+                            "No books selected"
+                        } else {
+                            "$selectedCount selected"
+                        },
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Button(
+                        onClick = { viewModel.saveSelectedBooks(onSaved = onSaved) },
+                        enabled = selectedCount > 0 && discoveredBooks.isNotEmpty(),
+                    ) {
+                        Text("Save")
+                    }
+                }
+            }
+        },
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -63,67 +90,16 @@ fun ScanReviewScreen(
                 ) {
                     Text("Back")
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Review scan results",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = if (discoveredBooks.isEmpty()) {
-                            "No books found."
-                        } else {
-                            "Found ${discoveredBooks.size} book${if (discoveredBooks.size == 1) "" else "s"}."
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Button(
-                    onClick = { viewModel.saveSelectedBooks(onSaved = onSaved) },
-                    enabled = selectedCount > 0 && discoveredBooks.isNotEmpty(),
-                ) {
-                    Text("Save selected")
-                }
+                Text(
+                    text = if (discoveredBooks.isEmpty()) {
+                        "No books found"
+                    } else {
+                        "Found ${discoveredBooks.size}"
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
-
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        text = if (selectedCount == 0) {
-                            "No books selected"
-                        } else {
-                            "$selectedCount book${if (selectedCount == 1) "" else "s"} selected"
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Button(
-                            onClick = viewModel::selectAllDiscoveredBooks,
-                            enabled = discoveredBooks.isNotEmpty(),
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("Select all")
-                        }
-                        OutlinedButton(
-                            onClick = viewModel::clearSelectedDiscoveredBooks,
-                            enabled = selectedCount > 0,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("Clear all")
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider()
 
             if (discoveredBooks.isEmpty()) {
                 Card(
@@ -136,24 +112,14 @@ fun ScanReviewScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
-                            text = "No books to review",
+                            text = "Nothing to review",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
-                        Text(
-                            text = "Go back and scan a folder to discover audiobook folders.",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        TextButton(onClick = {
-                            viewModel.clearScanResults()
-                            onBackToSettings()
-                        }) {
-                            Text("Back to settings")
-                        }
                     }
                 }
             } else {
@@ -206,43 +172,18 @@ private fun LibrarySelectionRow(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = book.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                if (isSelected) {
-                    Text(
-                        text = "Selected",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
+            Text(
+                text = book.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
             Text(
                 text = "${book.trackCount} audio file${if (book.trackCount == 1) "" else "s"}",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            Text(
-                text = if (book.resumePositionMs > 0) {
-                    val trackName = book.tracks.getOrNull(book.resumeTrackIndex)?.title ?: "track ${book.resumeTrackIndex + 1}"
-                    "Resume saved at ${formatTime(book.resumePositionMs)} in $trackName"
-                } else {
-                    "No resume position yet"
-                },
-                style = MaterialTheme.typography.bodySmall,
-            )
         }
-        TextButton(onClick = onToggle) {
+        OutlinedButton(onClick = onToggle) {
             Text(if (isSelected) "Unselect" else "Select")
         }
     }
-}
-
-private fun formatTime(positionMs: Long): String {
-    val totalSeconds = positionMs / 1000L
-    val minutes = totalSeconds / 60L
-    val seconds = totalSeconds % 60L
-    return "%d:%02d".format(minutes, seconds)
 }
