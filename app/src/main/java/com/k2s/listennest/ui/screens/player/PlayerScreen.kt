@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -127,42 +128,40 @@ fun PlayerScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
+                OutlinedButton(
+                    onClick = viewModel::rewindOneMinute,
                     modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    shape = RoundedCornerShape(999.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                 ) {
-                    OutlinedButton(
-                        onClick = viewModel::rewindOneMinute,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("⏪ 1m")
-                    }
-                    OutlinedButton(
-                        onClick = viewModel::rewindTenSeconds,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("‹ 10s")
-                    }
+                    Text("⏪ 1m", style = MaterialTheme.typography.labelMedium)
                 }
-                Row(
+                OutlinedButton(
+                    onClick = viewModel::rewindTenSeconds,
                     modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    shape = RoundedCornerShape(999.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                 ) {
-                    OutlinedButton(
-                        onClick = viewModel::forwardTenSeconds,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("10s ›")
-                    }
-                    OutlinedButton(
-                        onClick = viewModel::forwardOneMinute,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("1m ⏩")
-                    }
+                    Text("‹10s", style = MaterialTheme.typography.labelMedium)
+                }
+                OutlinedButton(
+                    onClick = viewModel::forwardTenSeconds,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(999.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                ) {
+                    Text("10s›", style = MaterialTheme.typography.labelMedium)
+                }
+                OutlinedButton(
+                    onClick = viewModel::forwardOneMinute,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(999.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                ) {
+                    Text("1m ⏩", style = MaterialTheme.typography.labelMedium)
                 }
             }
 
