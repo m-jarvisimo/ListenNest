@@ -1,8 +1,5 @@
 package com.k2s.listennest.ui.screens.library
 
-import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -27,10 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -38,27 +32,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun LibraryScreen(
     viewModel: LibraryViewModel = viewModel(),
     onBookSelected: (LibraryBookItem) -> Unit = {},
-    onScanRequested: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-
-    val folderPickerLauncher = rememberLauncherForActivityResult(OpenDocumentTree()) { uri ->
-        if (uri != null) {
-            runCatching {
-                context.contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                )
-            }
-
-            val folderLabel = DocumentFile.fromTreeUri(context, uri)?.name
-                ?.takeIf { it.isNotBlank() }
-                ?: "Selected folder"
-
-            viewModel.onFolderSelected(uri.toString(), folderLabel)
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -71,40 +46,27 @@ fun LibraryScreen(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.SemiBold,
         )
+        Text(
+            text = "Tap a book to open it in the player, or remove it from your library.",
+            style = MaterialTheme.typography.bodyMedium,
+        )
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text(
-                    text = uiState.selectedFolderLabel ?: "No folder selected",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = uiState.statusMessage,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+        if (!uiState.selectedFolderLabel.isNullOrBlank()) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Button(onClick = { folderPickerLauncher.launch(null) }) {
-                        Text("Choose folder")
-                    }
-                    OutlinedButton(
-                        onClick = { viewModel.scanLibrary(onScanComplete = onScanRequested) },
-                        enabled = !uiState.isScanning && uiState.hasFolderSelected,
-                    ) {
-                        Text("Scan library")
-                    }
-                    if (uiState.isScanning) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                        )
-                    }
+                    Text(
+                        text = "Library source",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = uiState.selectedFolderLabel ?: "Selected folder",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
+                    )
                 }
             }
         }
@@ -117,13 +79,9 @@ fun LibraryScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = "Your library",
+                    text = "Your books",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = "Tap a book to open it in the player, or remove it from your library.",
-                    style = MaterialTheme.typography.bodyMedium,
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -189,20 +147,12 @@ fun LibraryScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        text = if (uiState.hasFolderSelected) {
-                            "Your library is empty."
-                        } else {
-                            "No books imported yet."
-                        },
+                        text = "No books in your library yet",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = if (uiState.hasFolderSelected) {
-                            "Scan the selected folder to discover books, then choose what to keep."
-                        } else {
-                            "Pick a folder containing audiobook folders, then scan."
-                        },
+                        text = "Open Settings to choose a folder, scan it, and pick the books you want to keep.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }

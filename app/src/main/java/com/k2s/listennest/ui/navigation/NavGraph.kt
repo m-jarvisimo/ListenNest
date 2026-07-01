@@ -21,13 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.k2s.listennest.ui.screens.library.LibraryBookItem
 import com.k2s.listennest.ui.screens.library.LibraryScreen
-import com.k2s.listennest.ui.screens.library.ScanResultsScreen
 import com.k2s.listennest.ui.screens.player.PlayerScreen
 import com.k2s.listennest.ui.screens.settings.SettingsScreen
 
 private enum class AppRoute {
     Library,
-    ScanResults,
     Player,
     Settings,
 }
@@ -65,14 +63,6 @@ fun NavGraph() {
                     onBookSelected = {
                         selectedBook = it
                         route = AppRoute.Player
-                    },
-                    onScanRequested = {
-                        route = AppRoute.ScanResults
-                    },
-                )
-                AppRoute.ScanResults -> ScanResultsScreen(
-                    onDone = {
-                        route = AppRoute.Library
                     },
                 )
                 AppRoute.Player -> PlayerScreen(book = selectedBook)

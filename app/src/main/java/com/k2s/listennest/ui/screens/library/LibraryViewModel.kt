@@ -120,7 +120,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                     statusMessage = when {
                         scannedBooks.isEmpty() -> "No supported audiobook folders were found."
                         visibleSavedBooks.isNotEmpty() -> "Found ${visibleSavedBooks.size} saved book${if (visibleSavedBooks.size == 1) "" else "s"}."
-                        else -> "Found ${scannedBooks.size} book${if (scannedBooks.size == 1) "" else "s"}. Select the ones you want and save them."
+                        else -> "Found ${scannedBooks.size} book${if (scannedBooks.size == 1) "" else "s"}. Select the ones you want in Settings and save them."
                     },
                 )
             }
@@ -232,7 +232,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                 pendingSelectionUris = emptySet(),
                 statusMessage = if (current.savedBooks.isEmpty()) {
                     if (current.hasFolderSelected) {
-                        "Scan cancelled. Tap Scan library to discover books."
+                        "Scan cancelled. Open Settings to scan your folder again."
                     } else {
                         SELECT_A_FOLDER_PROMPT
                     }
