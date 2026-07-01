@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -68,12 +69,11 @@ fun SettingsScreen(
     Scaffold(
         bottomBar = {
             Card(modifier = Modifier.fillMaxWidth()) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
                         text = if (selectedCount == 0) {
@@ -84,15 +84,23 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                     )
-                    Spacer(modifier = Modifier.weight(1f))
-                    OutlinedButton(onClick = viewModel::clearScanResults) {
-                        Text("Clear results")
-                    }
-                    Button(
-                        onClick = { viewModel.saveSelectedBooks() },
-                        enabled = selectedCount > 0 && !uiState.isScanning,
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text("Save selected")
+                        OutlinedButton(
+                            onClick = viewModel::clearScanResults,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text("Clear results")
+                        }
+                        Button(
+                            onClick = { viewModel.saveSelectedBooks() },
+                            enabled = selectedCount > 0 && !uiState.isScanning,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text("Save selected")
+                        }
                     }
                 }
             }
@@ -115,137 +123,173 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodyMedium,
             )
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        text = "1. Choose your library folder",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = uiState.selectedFolderLabel ?: "No folder selected",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        text = uiState.statusMessage,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Button(onClick = { folderPickerLauncher.launch(null) }) {
-                            Text("Choose folder")
-                        }
-                        OutlinedButton(
-                            onClick = { viewModel.scanLibrary() },
-                            enabled = !uiState.isScanning && uiState.hasFolderSelected,
-                        ) {
-                            Text("Scan folder")
-                        }
-                        if (uiState.isScanning) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        }
-                    }
-                }
-            }
-
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        text = "2. Review scan results",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = when {
-                            uiState.isScanning -> "Scanning the selected folder…"
-                            discoveredBooks.isEmpty() -> "Pick a folder and scan to populate this list."
-                            else -> "Found ${discoveredBooks.size} book${if (discoveredBooks.size == 1) "" else "s"}."
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(
-                            onClick = viewModel::selectAllDiscoveredBooks,
-                            enabled = discoveredBooks.isNotEmpty(),
-                        ) {
-                            Text("Select all")
-                        }
-                        OutlinedButton(
-                            onClick = viewModel::clearSelectedDiscoveredBooks,
-                            enabled = selectedCount > 0,
-                        ) {
-                            Text("Clear all")
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider()
-
-            if (discoveredBooks.isEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
-                ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(
-                            text = "No books to choose yet",
+                            text = "1. Choose your library folder",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            text = "Choose a folder and scan it to bring audiobook folders into this list.",
+                            text = uiState.selectedFolderLabel ?: "No folder selected",
                             style = MaterialTheme.typography.bodyMedium,
                         )
-                    }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(discoveredBooks, key = { it.folderUri }) { book ->
-                        val isSelected = book.isSelected
-                        ElevatedCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { viewModel.toggleBookSelection(book.folderUri) },
-                            colors = CardDefaults.elevatedCardColors(
-                                containerColor = if (isSelected) {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.surface
-                                },
-                            ),
-                        ) {
-                            LibrarySelectionRow(
-                                book = book,
-                                isSelected = isSelected,
-                                onToggle = { viewModel.toggleBookSelection(book.folderUri) },
-                            )
+                        Text(
+                            text = uiState.statusMessage,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(
+                                onClick = { folderPickerLauncher.launch(null) },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text("Choose folder")
+                            }
+                            OutlinedButton(
+                                onClick = { viewModel.scanLibrary() },
+                                enabled = !uiState.isScanning && uiState.hasFolderSelected,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text("Scan folder")
+                            }
+                            if (uiState.isScanning) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                    )
+                                    Text(
+                                        text = "Scanning…",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
                         }
                     }
-                    item { Spacer(modifier = Modifier.height(4.dp)) }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text(
+                            text = "2. Review scan results",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = when {
+                                uiState.isScanning -> "Scanning the selected folder…"
+                                discoveredBooks.isEmpty() -> "Pick a folder and scan to populate this list."
+                                else -> "Found ${discoveredBooks.size} book${if (discoveredBooks.size == 1) "" else "s"}."
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Button(
+                                onClick = viewModel::selectAllDiscoveredBooks,
+                                enabled = discoveredBooks.isNotEmpty(),
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Select all")
+                            }
+                            OutlinedButton(
+                                onClick = viewModel::clearSelectedDiscoveredBooks,
+                                enabled = selectedCount > 0,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Clear all")
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        if (discoveredBooks.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(top = 12.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    ),
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(20.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                    ) {
+                                        Text(
+                                            text = "No books to choose yet",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                        Text(
+                                            text = "Choose a folder and scan it to bring audiobook folders into this list.",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                items(discoveredBooks, key = { it.folderUri }) { book ->
+                                    val isSelected = book.isSelected
+                                    ElevatedCard(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { viewModel.toggleBookSelection(book.folderUri) },
+                                        colors = CardDefaults.elevatedCardColors(
+                                            containerColor = if (isSelected) {
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.surface
+                                            },
+                                        ),
+                                    ) {
+                                        LibrarySelectionRow(
+                                            book = book,
+                                            isSelected = isSelected,
+                                            onToggle = { viewModel.toggleBookSelection(book.folderUri) },
+                                        )
+                                    }
+                                }
+                                item { Spacer(modifier = Modifier.height(4.dp)) }
+                            }
+                        }
+                    }
                 }
             }
         }
