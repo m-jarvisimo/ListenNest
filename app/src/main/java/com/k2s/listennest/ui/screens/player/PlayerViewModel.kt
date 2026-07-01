@@ -158,17 +158,30 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         syncFromPlayer("Next track", persist = true)
     }
 
-    fun rewind30Seconds() {
-        val next = (player.currentPosition - 30_000L).coerceAtLeast(0L)
+    fun rewindTenSeconds() {
+        val next = (player.currentPosition - 10_000L).coerceAtLeast(0L)
         player.seekTo(next)
-        syncFromPlayer("Rewind 30s", persist = true)
+        syncFromPlayer("Rewind 10s", persist = true)
     }
 
-    fun forward30Seconds() {
+    fun forwardTenSeconds() {
         val duration = player.duration.takeIf { it > 0L } ?: DEFAULT_TRACK_DURATION_MS
-        val next = (player.currentPosition + 30_000L).coerceAtMost(duration)
+        val next = (player.currentPosition + 10_000L).coerceAtMost(duration)
         player.seekTo(next)
-        syncFromPlayer("Forward 30s", persist = true)
+        syncFromPlayer("Forward 10s", persist = true)
+    }
+
+    fun rewindOneMinute() {
+        val next = (player.currentPosition - 60_000L).coerceAtLeast(0L)
+        player.seekTo(next)
+        syncFromPlayer("Rewind 1m", persist = true)
+    }
+
+    fun forwardOneMinute() {
+        val duration = player.duration.takeIf { it > 0L } ?: DEFAULT_TRACK_DURATION_MS
+        val next = (player.currentPosition + 60_000L).coerceAtMost(duration)
+        player.seekTo(next)
+        syncFromPlayer("Forward 1m", persist = true)
     }
 
     fun seekToTrack(index: Int) {
