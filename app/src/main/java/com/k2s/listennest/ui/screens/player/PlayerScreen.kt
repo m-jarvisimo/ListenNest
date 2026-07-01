@@ -128,40 +128,52 @@ fun PlayerScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedButton(
                     onClick = viewModel::rewindOneMinute,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(999.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 ) {
-                    Text("⏪ 1m", style = MaterialTheme.typography.labelMedium)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("⏪", style = MaterialTheme.typography.titleMedium)
+                        Text("1m back", style = MaterialTheme.typography.labelSmall)
+                    }
                 }
                 OutlinedButton(
                     onClick = viewModel::rewindTenSeconds,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(999.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 ) {
-                    Text("‹10s", style = MaterialTheme.typography.labelMedium)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("‹", style = MaterialTheme.typography.titleMedium)
+                        Text("10s back", style = MaterialTheme.typography.labelSmall)
+                    }
                 }
                 OutlinedButton(
                     onClick = viewModel::forwardTenSeconds,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(999.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 ) {
-                    Text("10s›", style = MaterialTheme.typography.labelMedium)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(">", style = MaterialTheme.typography.titleMedium)
+                        Text("10s fwd", style = MaterialTheme.typography.labelSmall)
+                    }
                 }
                 OutlinedButton(
                     onClick = viewModel::forwardOneMinute,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(999.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 ) {
-                    Text("1m ⏩", style = MaterialTheme.typography.labelMedium)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("⏩", style = MaterialTheme.typography.titleMedium)
+                        Text("1m fwd", style = MaterialTheme.typography.labelSmall)
+                    }
                 }
             }
 
