@@ -127,32 +127,42 @@ fun PlayerScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                OutlinedButton(
-                    onClick = viewModel::rewindOneMinute,
+                Row(
                     modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text("⏪ 1m")
+                    OutlinedButton(
+                        onClick = viewModel::rewindOneMinute,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("⏪ 1m")
+                    }
+                    OutlinedButton(
+                        onClick = viewModel::rewindTenSeconds,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("‹ 10s")
+                    }
                 }
-                OutlinedButton(
-                    onClick = viewModel::rewindTenSeconds,
+                Row(
                     modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text("‹ 10s")
-                }
-                OutlinedButton(
-                    onClick = viewModel::forwardTenSeconds,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("10s ›")
-                }
-                OutlinedButton(
-                    onClick = viewModel::forwardOneMinute,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("1m ⏩")
+                    OutlinedButton(
+                        onClick = viewModel::forwardTenSeconds,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("10s ›")
+                    }
+                    OutlinedButton(
+                        onClick = viewModel::forwardOneMinute,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("1m ⏩")
+                    }
                 }
             }
 
