@@ -127,25 +127,32 @@ fun PlayerScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                OutlinedButton(onClick = viewModel::rewindOneMinute, modifier = Modifier.weight(1f)) {
-                    Text("1 m back")
+                OutlinedButton(
+                    onClick = viewModel::rewindOneMinute,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("⏪ 1m")
                 }
-                OutlinedButton(onClick = viewModel::rewindTenSeconds, modifier = Modifier.weight(1f)) {
-                    Text("10 s back")
+                OutlinedButton(
+                    onClick = viewModel::rewindTenSeconds,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("‹ 10s")
                 }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                OutlinedButton(onClick = viewModel::forwardTenSeconds, modifier = Modifier.weight(1f)) {
-                    Text("10 s forward")
+                OutlinedButton(
+                    onClick = viewModel::forwardTenSeconds,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("10s ›")
                 }
-                OutlinedButton(onClick = viewModel::forwardOneMinute, modifier = Modifier.weight(1f)) {
-                    Text("1 m forward")
+                OutlinedButton(
+                    onClick = viewModel::forwardOneMinute,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("1m ⏩")
                 }
             }
 
