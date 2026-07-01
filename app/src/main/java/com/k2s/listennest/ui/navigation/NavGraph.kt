@@ -22,12 +22,14 @@ import androidx.compose.ui.unit.dp
 import com.k2s.listennest.ui.screens.library.LibraryBookItem
 import com.k2s.listennest.ui.screens.library.LibraryScreen
 import com.k2s.listennest.ui.screens.player.PlayerScreen
+import com.k2s.listennest.ui.screens.settings.ScanReviewScreen
 import com.k2s.listennest.ui.screens.settings.SettingsScreen
 
 private enum class AppRoute {
     Library,
     Player,
     Settings,
+    Review,
 }
 
 @Composable
@@ -66,7 +68,13 @@ fun NavGraph() {
                     },
                 )
                 AppRoute.Player -> PlayerScreen(book = selectedBook)
-                AppRoute.Settings -> SettingsScreen()
+                AppRoute.Settings -> SettingsScreen(
+                    onScanComplete = { route = AppRoute.Review },
+                )
+                AppRoute.Review -> ScanReviewScreen(
+                    onBackToSettings = { route = AppRoute.Settings },
+                    onSaved = { route = AppRoute.Settings },
+                )
             }
         }
     }
