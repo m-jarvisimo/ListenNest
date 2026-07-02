@@ -158,8 +158,8 @@ internal fun PlayerScreenContent(
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("⏪", style = MaterialTheme.typography.titleMedium)
-                        Text("1m back", style = MaterialTheme.typography.labelSmall)
+                        Text("<<", style = MaterialTheme.typography.titleMedium)
+                        Text("1m", style = MaterialTheme.typography.labelSmall)
                     }
                 }
                 OutlinedButton(
@@ -169,8 +169,8 @@ internal fun PlayerScreenContent(
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("‹", style = MaterialTheme.typography.titleMedium)
-                        Text("10s back", style = MaterialTheme.typography.labelSmall)
+                        Text("<", style = MaterialTheme.typography.titleMedium)
+                        Text("10s", style = MaterialTheme.typography.labelSmall)
                     }
                 }
                 OutlinedButton(
@@ -181,7 +181,7 @@ internal fun PlayerScreenContent(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(">", style = MaterialTheme.typography.titleMedium)
-                        Text("10s fwd", style = MaterialTheme.typography.labelSmall)
+                        Text("10s", style = MaterialTheme.typography.labelSmall)
                     }
                 }
                 OutlinedButton(
@@ -191,8 +191,8 @@ internal fun PlayerScreenContent(
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("⏩", style = MaterialTheme.typography.titleMedium)
-                        Text("1m fwd", style = MaterialTheme.typography.labelSmall)
+                        Text(">>", style = MaterialTheme.typography.titleMedium)
+                        Text("1m", style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
