@@ -9,11 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -24,9 +23,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.k2s.listennest.ui.theme.ListenNestTheme
 
 @Composable
 fun LibraryScreen(
@@ -34,7 +35,19 @@ fun LibraryScreen(
     onBookSelected: (LibraryBookItem) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LibraryScreenContent(
+        uiState = uiState,
+        onBookSelected = onBookSelected,
+        onRemoveBook = viewModel::requestRemoveBook,
+    )
+}
 
+@Composable
+internal fun LibraryScreenContent(
+    uiState: LibraryUiState,
+    onBookSelected: (LibraryBookItem) -> Unit,
+    onRemoveBook: (LibraryBookItem) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -63,7 +76,7 @@ fun LibraryScreen(
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = uiState.selectedFolderLabel ?: "Selected folder",
+                        text = uiState.selectedFolderLabel,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
                     )
@@ -75,7 +88,7 @@ fun LibraryScreen(
 
         if (uiState.hasSavedBooks) {
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
@@ -122,7 +135,7 @@ fun LibraryScreen(
                                     )
                                 }
                                 OutlinedButton(
-                                    onClick = { viewModel.requestRemoveBook(book) },
+                                    onClick = { onRemoveBook(book) },
                                 ) {
                                     Text("Remove")
                                 }
@@ -135,7 +148,7 @@ fun LibraryScreen(
         } else {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = androidx.compose.material3.CardDefaults.cardColors(
+                colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ),
             ) {
@@ -158,6 +171,51 @@ fun LibraryScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun LibraryScreenPreview() {
+    ListenNestTheme {
+        LibraryScreenContent(
+            uiState = LibraryUiState(
+                selectedFolderLabel = "Audiobooks",
+                savedBooks = listOf(
+                    LibraryBookItem(
+                        title = "Dune",
+                        folderUri = "content://books/dune",
+                        tracks = listOf(
+                            LibraryTrackItem("01 - Dune", "content://books/dune/01"),
+                            LibraryTrackItem("02 - Muad'Dib", "content://books/dune/02"),
+                        ),
+                        resumeTrackIndex = 1,
+                        resumePositionMs = 8 * 60 * 1000L + 42 * 1000L,
+                    ),
+                    LibraryBookItem(
+                        title = "Project Hail Mary",
+                        folderUri = "content://books/hail-mary",
+                        tracks = listOf(
+                            LibraryTrackItem("01 - Rock", "content://books/hail-mary/01"),
+                        ),
+                    ),
+                ),
+            ),
+            onBookSelected = {},
+            onRemoveBook = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun LibraryEmptyPreview() {
+    ListenNestTheme {
+        LibraryScreenContent(
+            uiState = LibraryUiState(),
+            onBookSelected = {},
+            onRemoveBook = {},
+        )
     }
 }
 

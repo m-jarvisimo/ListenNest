@@ -1,6 +1,5 @@
 package com.k2s.listennest.ui.screens.player
 
-import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,8 +12,8 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,13 +32,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.k2s.listennest.R
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.ui.PlayerView
+import com.k2s.listennest.R
 import com.k2s.listennest.ui.screens.library.LibraryBookItem
+import com.k2s.listennest.ui.screens.library.LibraryTrackItem
+import com.k2s.listennest.ui.theme.ListenNestTheme
 
 @Composable
 fun PlayerScreen(
@@ -47,14 +47,33 @@ fun PlayerScreen(
     viewModel: PlayerViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(book?.folderUri) {
+        viewModel.loadBook(book)
+    }
+
+    PlayerScreenContent(
+        uiState = uiState,
+        onTogglePlayback = viewModel::togglePlayback,
+        onRewindOneMinute = viewModel::rewindOneMinute,
+        onRewindTenSeconds = viewModel::rewindTenSeconds,
+        onForwardTenSeconds = viewModel::forwardTenSeconds,
+        onForwardOneMinute = viewModel::forwardOneMinute,
+    )
+}
+
+@Composable
+internal fun PlayerScreenContent(
+    uiState: PlayerUiState,
+    onTogglePlayback: () -> Unit,
+    onRewindOneMinute: () -> Unit,
+    onRewindTenSeconds: () -> Unit,
+    onForwardTenSeconds: () -> Unit,
+    onForwardOneMinute: () -> Unit,
+) {
     val progress = if (uiState.durationMs > 0L) {
         (uiState.positionMs.toFloat() / uiState.durationMs.toFloat()).coerceIn(0f, 1f)
     } else {
         0f
-    }
-
-    LaunchedEffect(book?.folderUri) {
-        viewModel.loadBook(book)
     }
 
     Scaffold { paddingValues ->
@@ -98,7 +117,7 @@ fun PlayerScreen(
                             .padding(4.dp),
                     ) {
                         FloatingActionButton(
-                            onClick = viewModel::togglePlayback,
+                            onClick = onTogglePlayback,
                             modifier = Modifier.size(52.dp),
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -131,10 +150,9 @@ fun PlayerScreen(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedButton(
-                    onClick = viewModel::rewindOneMinute,
+                    onClick = onRewindOneMinute,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
@@ -145,7 +163,7 @@ fun PlayerScreen(
                     }
                 }
                 OutlinedButton(
-                    onClick = viewModel::rewindTenSeconds,
+                    onClick = onRewindTenSeconds,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
@@ -156,7 +174,7 @@ fun PlayerScreen(
                     }
                 }
                 OutlinedButton(
-                    onClick = viewModel::forwardTenSeconds,
+                    onClick = onForwardTenSeconds,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
@@ -167,7 +185,7 @@ fun PlayerScreen(
                     }
                 }
                 OutlinedButton(
-                    onClick = viewModel::forwardOneMinute,
+                    onClick = onForwardOneMinute,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
@@ -181,6 +199,34 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
         }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun PlayerScreenPreview() {
+    ListenNestTheme {
+        PlayerScreenContent(
+            uiState = PlayerUiState(
+                bookTitle = "Dune",
+                folderUri = "content://books/dune",
+                coverArtUri = null,
+                tracks = listOf(
+                    "01 - Dune",
+                    "02 - Muad'Dib",
+                    "03 - A Lesson",
+                ),
+                currentTrackIndex = 1,
+                positionMs = 8 * 60 * 1000L + 42 * 1000L,
+                durationMs = 19 * 60 * 1000L,
+                isPlaying = true,
+            ),
+            onTogglePlayback = {},
+            onRewindOneMinute = {},
+            onRewindTenSeconds = {},
+            onForwardTenSeconds = {},
+            onForwardOneMinute = {},
+        )
     }
 }
 

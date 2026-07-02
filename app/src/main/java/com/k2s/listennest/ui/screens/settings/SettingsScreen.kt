@@ -22,11 +22,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.k2s.listennest.ui.screens.library.LibraryUiState
 import com.k2s.listennest.ui.screens.library.LibraryViewModel
+import com.k2s.listennest.ui.theme.ListenNestTheme
 
 @Composable
 fun SettingsScreen(
@@ -53,6 +56,19 @@ fun SettingsScreen(
         }
     }
 
+    SettingsScreenContent(
+        uiState = uiState,
+        onChooseFolder = { folderPickerLauncher.launch(null) },
+        onScanFolder = { viewModel.scanLibrary(onScanComplete = onScanComplete) },
+    )
+}
+
+@Composable
+internal fun SettingsScreenContent(
+    uiState: LibraryUiState,
+    onChooseFolder: () -> Unit,
+    onScanFolder: () -> Unit,
+) {
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -93,15 +109,13 @@ fun SettingsScreen(
 
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(
-                            onClick = { folderPickerLauncher.launch(null) },
+                            onClick = onChooseFolder,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text("Choose folder")
                         }
                         OutlinedButton(
-                            onClick = {
-                                viewModel.scanLibrary(onScanComplete = onScanComplete)
-                            },
+                            onClick = onScanFolder,
                             enabled = !uiState.isScanning && uiState.hasFolderSelected,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -127,5 +141,20 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun SettingsScreenPreview() {
+    ListenNestTheme {
+        SettingsScreenContent(
+            uiState = LibraryUiState(
+                selectedFolderLabel = "Audiobooks",
+                statusMessage = "Folder selected. Tap Scan folder to discover books.",
+            ),
+            onChooseFolder = {},
+            onScanFolder = {},
+        )
     }
 }
