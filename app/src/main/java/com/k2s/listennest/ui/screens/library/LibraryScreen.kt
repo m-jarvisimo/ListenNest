@@ -1,7 +1,9 @@
 package com.k2s.listennest.ui.screens.library
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,12 +13,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,13 +43,24 @@ fun LibraryScreen(
     LibraryScreenContent(
         uiState = uiState,
         onBookSelected = onBookSelected,
+        onBookLongPressed = viewModel::requestBookActionsMenu,
+        onBookMenuDelete = { viewModel.chooseDeleteFromBookActionsMenu() },
+        onBookMenuCancel = viewModel::cancelBookActionsMenu,
+        onConfirmRemoveBook = viewModel::confirmRemoveBook,
+        onCancelRemoveBook = viewModel::cancelRemoveBook,
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun LibraryScreenContent(
     uiState: LibraryUiState,
     onBookSelected: (LibraryBookItem) -> Unit,
+    onBookLongPressed: (LibraryBookItem) -> Unit = {},
+    onBookMenuDelete: (LibraryBookItem) -> Unit = {},
+    onBookMenuCancel: () -> Unit = {},
+    onConfirmRemoveBook: () -> Unit = {},
+    onCancelRemoveBook: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -57,7 +74,7 @@ internal fun LibraryScreenContent(
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            text = "Tap a book to open it in the player.",
+            text = "Tap a book to open it in the player. Tap and hold for actions.",
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -98,39 +115,58 @@ internal fun LibraryScreenContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(uiState.savedBooks, key = { it.folderUri }) { book ->
-                        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.Top,
-                            ) {
-                                Column(
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                                Row(
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .clickable { onBookSelected(book) },
-                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalAlignment = Alignment.Top,
                                 ) {
-                                    Text(
-                                        text = book.title,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                    Text(
-                                        text = "${book.trackCount} audio file${if (book.trackCount == 1) "" else "s"}",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                    Text(
-                                        text = if (book.resumePositionMs > 0) {
-                                            val trackName = book.tracks.getOrNull(book.resumeTrackIndex)?.title ?: "track ${book.resumeTrackIndex + 1}"
-                                            "Resume saved at ${formatTime(book.resumePositionMs)} in $trackName"
-                                        } else {
-                                            "No resume position yet"
-                                        },
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .combinedClickable(
+                                                onClick = { onBookSelected(book) },
+                                                onLongClick = { onBookLongPressed(book) },
+                                            ),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    ) {
+                                        Text(
+                                            text = book.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                        Text(
+                                            text = "${book.trackCount} audio file${if (book.trackCount == 1) "" else "s"}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                        Text(
+                                            text = if (book.resumePositionMs > 0) {
+                                                val trackName = book.tracks.getOrNull(book.resumeTrackIndex)?.title ?: "track ${book.resumeTrackIndex + 1}"
+                                                "Resume saved at ${formatTime(book.resumePositionMs)} in $trackName"
+                                            } else {
+                                                "No resume position yet"
+                                            },
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
                                 }
+                            }
+
+                            DropdownMenu(
+                                expanded = uiState.pendingBookMenuBook?.folderUri == book.folderUri,
+                                onDismissRequest = onBookMenuCancel,
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Delete from library") },
+                                    onClick = { onBookMenuDelete(book) },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Cancel") },
+                                    onClick = onBookMenuCancel,
+                                )
                             }
                         }
                     }
@@ -163,6 +199,28 @@ internal fun LibraryScreenContent(
                 }
             }
         }
+    }
+
+    uiState.pendingRemovalBook?.let { book ->
+        AlertDialog(
+            onDismissRequest = onCancelRemoveBook,
+            title = {
+                Text("Delete from library?")
+            },
+            text = {
+                Text("Delete \"${book.title}\" from your library? This only removes it from the app.")
+            },
+            confirmButton = {
+                TextButton(onClick = onConfirmRemoveBook) {
+                    Text("Delete from library")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onCancelRemoveBook) {
+                    Text("Cancel")
+                }
+            },
+        )
     }
 }
 

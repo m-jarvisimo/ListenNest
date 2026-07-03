@@ -6,7 +6,7 @@ import org.junit.Test
 
 class LibraryStateReducerTest {
     @Test
-    fun requestRemoveBookConfirmation_setsPendingRemoval() {
+    fun requestBookActionsMenu_setsPendingBookMenu() {
         val book = LibraryBookItem(
             title = "Book One",
             folderUri = "content://books/one",
@@ -20,11 +20,54 @@ class LibraryStateReducerTest {
             pendingSelectionUris = setOf(book.folderUri),
         )
 
-        val updated = requestRemoveBookConfirmation(state, book)
+        val updated = requestBookActionsMenu(state, book)
 
-        assertEquals(book, updated.pendingRemovalBook)
+        assertEquals(book, updated.pendingBookMenuBook)
+        assertEquals(null, updated.pendingRemovalBook)
+    }
+
+    @Test
+    fun cancelBookActionsMenu_clearsPendingBookMenu() {
+        val book = LibraryBookItem(
+            title = "Book One",
+            folderUri = "content://books/one",
+            tracks = listOf(LibraryTrackItem(title = "track 1", uri = "content://tracks/1")),
+            isSelected = true,
+        )
+        val state = LibraryUiState(
+            selectedFolderUri = "content://root",
+            selectedFolderLabel = "Audiobooks",
+            savedBooks = listOf(book),
+            pendingSelectionUris = setOf(book.folderUri),
+            pendingBookMenuBook = book,
+        )
+
+        val updated = cancelBookActionsMenu(state)
+
+        assertEquals(null, updated.pendingBookMenuBook)
         assertEquals(listOf(book), updated.savedBooks)
-        assertEquals(setOf(book.folderUri), updated.pendingSelectionUris)
+    }
+
+    @Test
+    fun chooseDeleteFromBookActionsMenu_opensDeleteConfirmationAndClearsMenu() {
+        val book = LibraryBookItem(
+            title = "Book One",
+            folderUri = "content://books/one",
+            tracks = listOf(LibraryTrackItem(title = "track 1", uri = "content://tracks/1")),
+            isSelected = true,
+        )
+        val state = LibraryUiState(
+            selectedFolderUri = "content://root",
+            selectedFolderLabel = "Audiobooks",
+            savedBooks = listOf(book),
+            pendingSelectionUris = setOf(book.folderUri),
+            pendingBookMenuBook = book,
+        )
+
+        val updated = chooseDeleteFromBookActionsMenu(state)
+
+        assertEquals(null, updated.pendingBookMenuBook)
+        assertEquals(book, updated.pendingRemovalBook)
     }
 
     @Test

@@ -1,9 +1,31 @@
 package com.k2s.listennest.ui.screens.library
 
+internal fun requestBookActionsMenu(
+    state: LibraryUiState,
+    book: LibraryBookItem,
+): LibraryUiState = state.copy(
+    pendingBookMenuBook = book,
+    pendingRemovalBook = null,
+)
+
+internal fun cancelBookActionsMenu(state: LibraryUiState): LibraryUiState =
+    state.copy(pendingBookMenuBook = null)
+
+internal fun chooseDeleteFromBookActionsMenu(state: LibraryUiState): LibraryUiState {
+    val pendingBook = state.pendingBookMenuBook ?: return state
+    return state.copy(
+        pendingBookMenuBook = null,
+        pendingRemovalBook = pendingBook,
+    )
+}
+
 internal fun requestRemoveBookConfirmation(
     state: LibraryUiState,
     book: LibraryBookItem,
-): LibraryUiState = state.copy(pendingRemovalBook = book)
+): LibraryUiState = state.copy(
+    pendingBookMenuBook = null,
+    pendingRemovalBook = book,
+)
 
 internal fun cancelRemoveBookConfirmation(state: LibraryUiState): LibraryUiState =
     state.copy(pendingRemovalBook = null)

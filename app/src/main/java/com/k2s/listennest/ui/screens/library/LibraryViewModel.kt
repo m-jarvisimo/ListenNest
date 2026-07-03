@@ -41,6 +41,7 @@ data class LibraryUiState(
     val savedBooks: List<LibraryBookItem> = emptyList(),
     val discoveredBooks: List<LibraryBookItem> = emptyList(),
     val pendingSelectionUris: Set<String> = emptySet(),
+    val pendingBookMenuBook: LibraryBookItem? = null,
     val pendingRemovalBook: LibraryBookItem? = null,
     val isScanning: Boolean = false,
     val statusMessage: String = SELECT_A_FOLDER_PROMPT,
@@ -67,6 +68,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                 selectedFolderLabel = folderLabel,
                 discoveredBooks = emptyList(),
                 pendingSelectionUris = emptySet(),
+                pendingBookMenuBook = null,
                 pendingRemovalBook = null,
                 statusMessage = "Folder selected. Tap Scan folder to discover books.",
             )
@@ -195,6 +197,24 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                 )
             }
             onSaved()
+        }
+    }
+
+    fun requestBookActionsMenu(book: LibraryBookItem) {
+        _uiState.update { current ->
+            requestBookActionsMenu(current, book)
+        }
+    }
+
+    fun cancelBookActionsMenu() {
+        _uiState.update { current ->
+            cancelBookActionsMenu(current)
+        }
+    }
+
+    fun chooseDeleteFromBookActionsMenu() {
+        _uiState.update { current ->
+            chooseDeleteFromBookActionsMenu(current)
         }
     }
 
