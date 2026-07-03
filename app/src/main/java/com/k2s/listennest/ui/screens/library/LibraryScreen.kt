@@ -16,7 +16,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,7 +37,6 @@ fun LibraryScreen(
     LibraryScreenContent(
         uiState = uiState,
         onBookSelected = onBookSelected,
-        onRemoveBook = viewModel::requestRemoveBook,
     )
 }
 
@@ -46,7 +44,6 @@ fun LibraryScreen(
 internal fun LibraryScreenContent(
     uiState: LibraryUiState,
     onBookSelected: (LibraryBookItem) -> Unit,
-    onRemoveBook: (LibraryBookItem) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -60,7 +57,7 @@ internal fun LibraryScreenContent(
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            text = "Tap a book to open it in the player, or remove it from your library.",
+            text = "Tap a book to open it in the player.",
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -134,11 +131,6 @@ internal fun LibraryScreenContent(
                                         style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
-                                OutlinedButton(
-                                    onClick = { onRemoveBook(book) },
-                                ) {
-                                    Text("Remove")
-                                }
                             }
                         }
                     }
@@ -202,7 +194,6 @@ private fun LibraryScreenPreview() {
                 ),
             ),
             onBookSelected = {},
-            onRemoveBook = {},
         )
     }
 }
@@ -214,7 +205,6 @@ private fun LibraryEmptyPreview() {
         LibraryScreenContent(
             uiState = LibraryUiState(),
             onBookSelected = {},
-            onRemoveBook = {},
         )
     }
 }
