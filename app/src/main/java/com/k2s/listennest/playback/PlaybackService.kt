@@ -17,6 +17,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaSession
 import androidx.media3.ui.PlayerNotificationManager
 import com.k2s.listennest.MainActivity
 import com.k2s.listennest.R
@@ -50,6 +51,7 @@ class PlaybackService : Service() {
 
     private lateinit var resumeStore: PlaybackResumeStore
     private lateinit var player: ExoPlayer
+    private lateinit var mediaSession: MediaSession
     private lateinit var notificationManager: PlayerNotificationManager
 
     private var progressJob: Job? = null
@@ -93,6 +95,18 @@ class PlaybackService : Service() {
             })
         }
 
+        mediaSession = MediaSession.Builder(this, player)
+            .setId("listennest-playback")
+            .build()
+
+        val sessionActivityIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        mediaSession.setSessionActivity(sessionActivityIntent)
+
         notificationManager = PlayerNotificationManager.Builder(this, NOTIFICATION_ID, NOTIFICATION_CHANNEL_ID)
             .setChannelNameResourceId(R.string.playback_notification_channel_name)
             .setChannelDescriptionResourceId(R.string.playback_notification_channel_description)
@@ -101,12 +115,7 @@ class PlaybackService : Service() {
                     _uiState.value.bookTitle
 
                 override fun createCurrentContentIntent(player: Player): PendingIntent? =
-                    PendingIntent.getActivity(
-                        this@PlaybackService,
-                        0,
-                        Intent(this@PlaybackService, MainActivity::class.java),
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                    )
+                    sessionActivityIntent
 
                 override fun getCurrentContentText(player: Player): CharSequence? =
                     _uiState.value.currentTrackLabel
@@ -157,6 +166,7 @@ class PlaybackService : Service() {
         notificationManager.setUseNextAction(false)
         notificationManager.setUseStopAction(false)
         notificationManager.setUseChronometer(true)
+        notificationManager.setMediaSessionToken(mediaSession.platformToken)
         notificationManager.setPlayer(player)
 
         progressJob = serviceScope.launch {
@@ -172,6 +182,9 @@ class PlaybackService : Service() {
         progressJob?.cancel()
         if (this::notificationManager.isInitialized) {
             notificationManager.setPlayer(null)
+        }
+        if (this::mediaSession.isInitialized) {
+            mediaSession.release()
         }
         if (this::player.isInitialized) {
             player.release()
