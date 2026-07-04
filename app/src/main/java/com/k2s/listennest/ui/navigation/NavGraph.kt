@@ -1,6 +1,7 @@
 package com.k2s.listennest.ui.navigation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,6 +40,7 @@ private enum class AppRoute {
 fun NavGraph() {
     var route by rememberSaveable { mutableStateOf(AppRoute.Library) }
     var selectedBook by remember { mutableStateOf<LibraryBookItem?>(null) }
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -46,16 +51,36 @@ fun NavGraph() {
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top,
         ) {
-            Button(onClick = { route = AppRoute.Library }) { Text("Library") }
-            Button(onClick = { route = AppRoute.Player }) { Text("Player") }
-            Button(onClick = { route = AppRoute.Settings }) { Text("Settings") }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { route = AppRoute.Library }) { Text("Library") }
+                Button(onClick = { route = AppRoute.Player }) { Text("Player") }
+            }
+
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Text("☰")
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Settings") },
+                        onClick = {
+                            menuExpanded = false
+                            route = AppRoute.Settings
+                        },
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        androidx.compose.foundation.layout.Box(
+        Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
