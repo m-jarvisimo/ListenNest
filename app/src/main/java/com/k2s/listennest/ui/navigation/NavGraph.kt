@@ -38,7 +38,7 @@ private enum class AppRoute {
 
 @Composable
 fun NavGraph() {
-    var route by rememberSaveable { mutableStateOf(AppRoute.Library) }
+    var route by rememberSaveable { mutableStateOf(AppRoute.Player) }
     var selectedBook by remember { mutableStateOf<LibraryBookItem?>(null) }
     var menuExpanded by remember { mutableStateOf(false) }
 
