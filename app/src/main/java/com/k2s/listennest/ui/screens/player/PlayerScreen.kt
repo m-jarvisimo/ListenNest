@@ -201,30 +201,6 @@ internal fun PlayerScreenContent(
 
                     Box(
                         modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.18f))
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(
-                                text = "Now playing",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = uiState.currentTrackLabel,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                    }
-
-                    Box(
-                        modifier = Modifier
                             .align(Alignment.Center)
                             .clip(RoundedCornerShape(999.dp))
                             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.10f))
