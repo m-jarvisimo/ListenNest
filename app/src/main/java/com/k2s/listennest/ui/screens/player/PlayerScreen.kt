@@ -45,6 +45,7 @@ import com.k2s.listennest.R
 import com.k2s.listennest.ui.screens.library.LibraryBookItem
 import com.k2s.listennest.ui.screens.library.LibraryTrackItem
 import com.k2s.listennest.ui.theme.ListenNestTheme
+import kotlin.math.roundToInt
 
 @Composable
 fun PlayerScreen(
@@ -245,17 +246,55 @@ internal fun PlayerScreenContent(
                 }
             }
 
-            LinearProgressIndicator(
-                progress = { progress },
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
             ) {
-                Text(text = formatTime(uiState.positionMs))
-                Text(text = formatTime((uiState.durationMs - uiState.positionMs).coerceAtLeast(0L)))
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "Listening progress",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = progressSummaryLabel(uiState.positionMs, uiState.durationMs),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = formatTime(uiState.positionMs),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = formatTime((uiState.durationMs - uiState.positionMs).coerceAtLeast(0L)),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(10.dp),
+                    )
+                }
             }
 
             HorizontalDivider()
@@ -353,6 +392,14 @@ private fun formatTime(positionMs: Long): String {
     } else {
         "%d:%02d".format(minutes, seconds)
     }
+}
+
+internal fun progressSummaryLabel(positionMs: Long, durationMs: Long): String {
+    if (durationMs <= 0L) return "Listening progress"
+    val percent = ((positionMs.coerceIn(0L, durationMs).toDouble() / durationMs.toDouble()) * 100.0)
+        .roundToInt()
+        .coerceIn(0, 100)
+    return "$percent% complete"
 }
 
 internal fun fallbackCoverBadge(bookTitle: String): String {
