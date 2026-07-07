@@ -13,6 +13,8 @@ import android.os.Binder
 import android.os.IBinder
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -72,6 +74,13 @@ class PlaybackService : Service() {
         super.onCreate()
         resumeStore = PlaybackResumeStore(applicationContext)
         player = ExoPlayer.Builder(applicationContext).build().apply {
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
+                    .build(),
+                /* handleAudioFocus= */ true,
+            )
             addListener(object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     syncFromPlayer(if (isPlaying) "Playing" else "Paused", persist = !isPlaying)
