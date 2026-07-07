@@ -1,6 +1,5 @@
 package com.k2s.listennest.ui.screens.player
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,10 +29,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2s.listennest.R
@@ -103,10 +104,14 @@ internal fun PlayerScreenContent(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    Image(
-                        painter = painterResource(id = R.drawable.cover_art_fallback),
-                        contentDescription = "Book cover art fallback",
+                    AsyncImage(
+                        model = uiState.coverArtUri?.takeIf { it.isNotBlank() },
+                        contentDescription = "${uiState.bookTitle} cover art",
                         modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(id = R.drawable.cover_art_fallback),
+                        error = painterResource(id = R.drawable.cover_art_fallback),
+                        fallback = painterResource(id = R.drawable.cover_art_fallback),
                     )
 
                     Box(
