@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
@@ -29,6 +30,7 @@ import androidx.media3.ui.PlayerNotificationManager
 import com.k2s.listennest.MainActivity
 import com.k2s.listennest.R
 import com.k2s.listennest.data.resume.PlaybackResumeStore
+import com.k2s.listennest.domain.settings.PlaybackSettingsStore
 import com.k2s.listennest.ui.screens.library.LibraryBookItem
 import com.k2s.listennest.ui.screens.library.LibraryTrackItem
 import com.k2s.listennest.ui.screens.player.PlayerUiState
@@ -51,12 +53,14 @@ private const val DEFAULT_TRACK_DURATION_MS = 30 * 60 * 1000L
 private const val SAVE_PROGRESS_THRESHOLD_MS = 5_000L
 private const val REWIND_INCREMENT_MS = 10_000L
 private const val FAST_FORWARD_INCREMENT_MS = 30_000L
+private const val PHONE_CALL_PAUSE_ENABLED_KEY = "phone_call_pause_enabled"
 
 class PlaybackService : Service() {
     private val binder = LocalBinder()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private lateinit var resumeStore: PlaybackResumeStore
+    private lateinit var playbackSettingsStore: PlaybackSettingsStore
     private lateinit var player: ExoPlayer
     private lateinit var mediaSession: MediaSession
     private lateinit var notificationManager: PlayerNotificationManager
@@ -69,6 +73,11 @@ class PlaybackService : Service() {
     private var telephonyCallback: TelephonyCallback? = null
     private var legacyCallStateListener: Any? = null
     private var resumeAfterCall: Boolean = false
+    private val phoneStatePreferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == PHONE_CALL_PAUSE_ENABLED_KEY) {
+            updatePhoneCallPauseRegistration()
+        }
+    }
 
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
@@ -82,6 +91,7 @@ class PlaybackService : Service() {
     override fun onCreate() {
         super.onCreate()
         resumeStore = PlaybackResumeStore(applicationContext)
+        playbackSettingsStore = PlaybackSettingsStore(applicationContext)
         player = ExoPlayer.Builder(applicationContext).build().apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
@@ -187,7 +197,8 @@ class PlaybackService : Service() {
         notificationManager.setMediaSessionToken(mediaSession.platformToken)
         notificationManager.setPlayer(player)
 
-        registerPhoneStateListener()
+        playbackSettingsStore.registerListener(phoneStatePreferenceListener)
+        updatePhoneCallPauseRegistration()
 
         progressJob = serviceScope.launch {
             while (isActive) {
@@ -201,6 +212,9 @@ class PlaybackService : Service() {
         persistProgress(force = true)
         progressJob?.cancel()
         unregisterPhoneStateListener()
+        if (this::playbackSettingsStore.isInitialized) {
+            playbackSettingsStore.unregisterListener(phoneStatePreferenceListener)
+        }
         if (this::notificationManager.isInitialized) {
             notificationManager.setPlayer(null)
         }
@@ -214,6 +228,15 @@ class PlaybackService : Service() {
         super.onDestroy()
     }
 
+    private fun updatePhoneCallPauseRegistration() {
+        if (!this::playbackSettingsStore.isInitialized || !this::player.isInitialized) return
+        unregisterPhoneStateListener()
+        if (playbackSettingsStore.isPhoneCallPauseEnabled()) {
+            registerPhoneStateListener()
+        }
+    }
+
+    @Suppress("DEPRECATION")
     private fun registerPhoneStateListener() {
         if (ContextCompat.checkSelfPermission(
                 applicationContext,
@@ -256,6 +279,7 @@ class PlaybackService : Service() {
         } else {
             @Suppress("DEPRECATION")
             val listener = object : android.telephony.PhoneStateListener() {
+                @Suppress("DEPRECATION")
                 override fun onCallStateChanged(state: Int, phoneNumber: String?) {
                     if (!this@PlaybackService::player.isInitialized) return
                     when (state) {
@@ -290,6 +314,7 @@ class PlaybackService : Service() {
             telephonyCallback?.let { manager.unregisterTelephonyCallback(it) }
             telephonyCallback = null
         } else {
+            @Suppress("DEPRECATION")
             val listener = legacyCallStateListener as? android.telephony.PhoneStateListener
             if (listener != null) {
                 @Suppress("DEPRECATION")
