@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -113,6 +114,44 @@ internal fun PlayerScreenContent(
                         error = painterResource(id = R.drawable.cover_art_fallback),
                         fallback = painterResource(id = R.drawable.cover_art_fallback),
                     )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0.00f to MaterialTheme.colorScheme.scrim.copy(alpha = 0.00f),
+                                        0.55f to MaterialTheme.colorScheme.scrim.copy(alpha = 0.05f),
+                                        1.00f to MaterialTheme.colorScheme.scrim.copy(alpha = 0.76f),
+                                    ),
+                                ),
+                            ),
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.18f))
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "Now playing",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = uiState.currentTrackLabel,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                    }
 
                     Box(
                         modifier = Modifier
