@@ -1,5 +1,6 @@
 package com.k2s.listennest.ui.screens.player
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -108,15 +110,79 @@ internal fun PlayerScreenContent(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    AsyncImage(
-                        model = uiState.coverArtUri?.takeIf { it.isNotBlank() },
-                        contentDescription = "${uiState.bookTitle} cover art",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        placeholder = painterResource(id = R.drawable.cover_art_fallback),
-                        error = painterResource(id = R.drawable.cover_art_fallback),
-                        fallback = painterResource(id = R.drawable.cover_art_fallback),
-                    )
+                    val hasCoverArt = !uiState.coverArtUri.isNullOrBlank()
+                    if (hasCoverArt) {
+                        AsyncImage(
+                            model = uiState.coverArtUri,
+                            contentDescription = "${uiState.bookTitle} cover art",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                            placeholder = painterResource(id = R.drawable.cover_art_fallback),
+                            error = painterResource(id = R.drawable.cover_art_fallback),
+                            fallback = painterResource(id = R.drawable.cover_art_fallback),
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
+                                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.24f),
+                                            MaterialTheme.colorScheme.surfaceVariant,
+                                        ),
+                                    ),
+                                ),
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.cover_art_fallback),
+                                contentDescription = "${uiState.bookTitle} cover art fallback",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(16.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.20f))
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                            ) {
+                                Text(
+                                    text = fallbackCoverBadge(uiState.bookTitle),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Black,
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(16.dp)
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.18f))
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(
+                                        text = "No cover art",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                    Text(
+                                        text = "Add folder art to personalize this book",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Box(
                         modifier = Modifier
@@ -287,4 +353,19 @@ private fun formatTime(positionMs: Long): String {
     } else {
         "%d:%02d".format(minutes, seconds)
     }
+}
+
+internal fun fallbackCoverBadge(bookTitle: String): String {
+    val words = bookTitle
+        .trim()
+        .split(Regex("\\s+"))
+        .filter { it.isNotBlank() }
+
+    val letters = when {
+        words.isEmpty() -> "LN"
+        words.size >= 2 -> words.take(2).mapNotNull { it.firstOrNull()?.takeIf(Char::isLetterOrDigit) }.joinToString("")
+        else -> words.first().filter { it.isLetterOrDigit() }.take(2)
+    }
+
+    return letters.ifBlank { "LN" }.uppercase()
 }
