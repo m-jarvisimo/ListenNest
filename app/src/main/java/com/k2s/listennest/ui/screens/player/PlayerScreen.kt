@@ -98,14 +98,14 @@ internal fun PlayerScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(76.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                    .height(72.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
                     text = uiState.bookTitle,
@@ -132,7 +132,7 @@ internal fun PlayerScreenContent(
                     .aspectRatio(1f),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                elevation = CardDefaults.cardElevation(defaultElevation = 14.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     val hasCoverArt = !uiState.coverArtUri.isNullOrBlank()
@@ -183,29 +183,6 @@ internal fun PlayerScreenContent(
                                 )
                             }
 
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(16.dp)
-                                    .clip(RoundedCornerShape(18.dp))
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.18f))
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                            ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(
-                                        text = "No cover art",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                    Text(
-                                        text = "Add folder art to personalize this book",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                }
-                            }
                         }
                     }
 
@@ -254,68 +231,50 @@ internal fun PlayerScreenContent(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(
-                                text = "Listening progress",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = progressSummaryLabel(uiState.positionMs, uiState.durationMs),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(
-                                text = formatTime(uiState.positionMs),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = formatTime((uiState.durationMs - uiState.positionMs).coerceAtLeast(0L)),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                    val currentPositionMs = if (isScrubbing) scrubPositionMs.toLong() else uiState.positionMs
+                    val sliderMax = uiState.durationMs.toFloat().coerceAtLeast(1f)
 
                     Slider(
-                        value = scrubPositionMs.coerceIn(0f, uiState.durationMs.toFloat().coerceAtLeast(1f)),
+                        value = scrubPositionMs.coerceIn(0f, sliderMax),
                         onValueChange = { newValue ->
                             isScrubbing = true
-                            scrubPositionMs = newValue.coerceIn(0f, uiState.durationMs.toFloat().coerceAtLeast(1f))
+                            scrubPositionMs = newValue.coerceIn(0f, sliderMax)
                         },
                         onValueChangeFinished = {
                             isScrubbing = false
                             onSeekToPosition(scrubPositionMs.toLong())
                         },
-                        valueRange = 0f..uiState.durationMs.toFloat().coerceAtLeast(1f),
+                        valueRange = 0f..sliderMax,
                         enabled = uiState.durationMs > 0L,
                         modifier = Modifier.fillMaxWidth(),
                     )
+
+                    Text(
+                        text = "${formatTime(currentPositionMs)} / ${formatTime(uiState.durationMs)}",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    )
                 }
             }
+
+            Spacer(modifier = Modifier.weight(1f))
 
             HorizontalDivider()
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedButton(
                     onClick = onRewindOneMinute,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("<<", style = MaterialTheme.typography.titleMedium)
@@ -326,7 +285,7 @@ internal fun PlayerScreenContent(
                     onClick = onRewindTenSeconds,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("<", style = MaterialTheme.typography.titleMedium)
@@ -337,7 +296,7 @@ internal fun PlayerScreenContent(
                     onClick = onForwardTenSeconds,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(">", style = MaterialTheme.typography.titleMedium)
@@ -348,7 +307,7 @@ internal fun PlayerScreenContent(
                     onClick = onForwardOneMinute,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(">>", style = MaterialTheme.typography.titleMedium)
@@ -356,8 +315,6 @@ internal fun PlayerScreenContent(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 }

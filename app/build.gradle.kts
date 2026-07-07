@@ -12,8 +12,8 @@ android {
         applicationId = "com.k2s.listennest"
         minSdk = 26
         targetSdk = 34
-        versionCode = 7
-        versionName = "0.1.6"
+        versionCode = 10
+        versionName = "0.1.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
