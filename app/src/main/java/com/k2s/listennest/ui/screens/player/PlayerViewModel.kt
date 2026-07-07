@@ -54,6 +54,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         playbackController.forwardOneMinute()
     }
 
+    fun seekToPosition(positionMs: Long) {
+        playbackController.seekToPosition(positionMs)
+    }
+
     fun previousTrack() {
         playbackController.previousTrack()
     }

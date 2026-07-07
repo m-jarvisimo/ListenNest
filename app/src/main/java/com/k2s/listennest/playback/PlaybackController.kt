@@ -60,6 +60,8 @@ class PlaybackController(application: Application) {
 
     fun forwardOneMinute() = withService { it.forwardOneMinute() }
 
+    fun seekToPosition(positionMs: Long) = withService { it.seekToPosition(positionMs) }
+
     fun previousTrack() = withService { it.previousTrack() }
 
     fun nextTrack() = withService { it.nextTrack() }

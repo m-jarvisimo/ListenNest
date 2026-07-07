@@ -307,6 +307,14 @@ class PlaybackService : Service() {
         syncFromPlayer("Forward 1m", persist = true)
     }
 
+    fun seekToPosition(positionMs: Long) {
+        if (!this::player.isInitialized) return
+        val duration = player.duration.takeIf { it > 0L } ?: DEFAULT_TRACK_DURATION_MS
+        val next = positionMs.coerceIn(0L, duration)
+        player.seekTo(next)
+        syncFromPlayer("Seek", persist = true)
+    }
+
     fun seekToTrack(index: Int) {
         if (!this::player.isInitialized || index !in 0 until player.mediaItemCount) return
         player.seekTo(index, 0L)

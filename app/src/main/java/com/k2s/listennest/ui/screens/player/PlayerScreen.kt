@@ -21,14 +21,18 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +69,7 @@ fun PlayerScreen(
         onRewindTenSeconds = viewModel::rewindTenSeconds,
         onForwardTenSeconds = viewModel::forwardTenSeconds,
         onForwardOneMinute = viewModel::forwardOneMinute,
+        onSeekToPosition = viewModel::seekToPosition,
     )
 }
 
@@ -76,13 +81,18 @@ internal fun PlayerScreenContent(
     onRewindTenSeconds: () -> Unit,
     onForwardTenSeconds: () -> Unit,
     onForwardOneMinute: () -> Unit,
+    onSeekToPosition: (Long) -> Unit,
 ) {
-    val progress = if (uiState.durationMs > 0L) {
-        (uiState.positionMs.toFloat() / uiState.durationMs.toFloat()).coerceIn(0f, 1f)
-    } else {
-        0f
+    var isScrubbing by remember { mutableStateOf(false) }
+    var scrubPositionMs by remember(uiState.currentTrackIndex, uiState.durationMs) {
+        mutableFloatStateOf(uiState.positionMs.toFloat())
     }
 
+    LaunchedEffect(uiState.currentTrackIndex, uiState.positionMs, isScrubbing) {
+        if (!isScrubbing) {
+            scrubPositionMs = uiState.positionMs.toFloat()
+        }
+    }
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -278,11 +288,19 @@ internal fun PlayerScreenContent(
                         }
                     }
 
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(10.dp),
+                    Slider(
+                        value = scrubPositionMs.coerceIn(0f, uiState.durationMs.toFloat().coerceAtLeast(1f)),
+                        onValueChange = { newValue ->
+                            isScrubbing = true
+                            scrubPositionMs = newValue.coerceIn(0f, uiState.durationMs.toFloat().coerceAtLeast(1f))
+                        },
+                        onValueChangeFinished = {
+                            isScrubbing = false
+                            onSeekToPosition(scrubPositionMs.toLong())
+                        },
+                        valueRange = 0f..uiState.durationMs.toFloat().coerceAtLeast(1f),
+                        enabled = uiState.durationMs > 0L,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
@@ -368,6 +386,7 @@ private fun PlayerScreenPreview() {
             onRewindTenSeconds = {},
             onForwardTenSeconds = {},
             onForwardOneMinute = {},
+            onSeekToPosition = {},
         )
     }
 }
