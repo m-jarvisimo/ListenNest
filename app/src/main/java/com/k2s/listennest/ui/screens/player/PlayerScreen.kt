@@ -167,22 +167,6 @@ internal fun PlayerScreenContent(
                                 contentScale = ContentScale.Crop,
                             )
 
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(16.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.20f))
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                            ) {
-                                Text(
-                                    text = fallbackCoverBadge(uiState.bookTitle),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.Black,
-                                )
-                            }
-
                         }
                     }
 
