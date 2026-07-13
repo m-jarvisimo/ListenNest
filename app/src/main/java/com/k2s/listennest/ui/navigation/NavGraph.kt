@@ -32,8 +32,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.LaunchedEffect
 import com.k2s.listennest.ui.screens.library.LibraryBookItem
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2s.listennest.ui.screens.library.LibraryScreen
+import com.k2s.listennest.ui.screens.library.LibraryViewModel
 import com.k2s.listennest.ui.screens.player.PlayerScreen
 import com.k2s.listennest.ui.screens.settings.ScanReviewScreen
 import com.k2s.listennest.ui.screens.settings.SettingsScreen
@@ -105,8 +109,24 @@ private fun TopNavPill(
 @Composable
 fun NavGraph() {
     var route by rememberSaveable { mutableStateOf(AppRoute.Player) }
-    var selectedBook by remember { mutableStateOf<LibraryBookItem?>(null) }
+    var selectedBookUri by rememberSaveable { mutableStateOf<String?>(null) }
     var menuExpanded by remember { mutableStateOf(false) }
+    val libraryViewModel: LibraryViewModel = viewModel()
+    val libraryState by libraryViewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(libraryState.savedBooks, libraryState.lastPlayedBookUri) {
+        if (selectedBookUri == null) {
+            selectedBookUri = resolveBookToOpen(
+                books = libraryState.savedBooks,
+                lastPlayedBookUri = libraryState.lastPlayedBookUri,
+            )?.folderUri
+        }
+    }
+
+    val selectedBook = resolveBookToOpen(
+        books = libraryState.savedBooks,
+        lastPlayedBookUri = selectedBookUri,
+    )
 
     Column(
         modifier = Modifier
@@ -161,8 +181,9 @@ fun NavGraph() {
         ) {
             when (route) {
                 AppRoute.Library -> LibraryScreen(
+                    libraryViewModel = libraryViewModel,
                     onBookSelected = {
-                        selectedBook = it
+                        selectedBookUri = it.folderUri
                         route = AppRoute.Player
                     },
                 )
@@ -177,4 +198,12 @@ fun NavGraph() {
             }
         }
     }
+}
+
+internal fun resolveBookToOpen(
+    books: List<LibraryBookItem>,
+    lastPlayedBookUri: String?,
+): LibraryBookItem? {
+    val targetUri = lastPlayedBookUri?.takeIf { it.isNotBlank() } ?: return null
+    return books.firstOrNull { it.folderUri == targetUri }
 }

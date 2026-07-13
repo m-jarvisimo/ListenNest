@@ -36,18 +36,21 @@ import com.k2s.listennest.ui.theme.ListenNestTheme
 
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = viewModel(),
+    libraryViewModel: LibraryViewModel = viewModel(),
     onBookSelected: (LibraryBookItem) -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by libraryViewModel.uiState.collectAsStateWithLifecycle()
     LibraryScreenContent(
         uiState = uiState,
-        onBookSelected = onBookSelected,
-        onBookLongPressed = viewModel::requestBookActionsMenu,
-        onBookMenuDelete = { viewModel.chooseDeleteFromBookActionsMenu() },
-        onBookMenuCancel = viewModel::cancelBookActionsMenu,
-        onConfirmRemoveBook = viewModel::confirmRemoveBook,
-        onCancelRemoveBook = viewModel::cancelRemoveBook,
+        onBookSelected = { book ->
+            libraryViewModel.markBookOpened(book.folderUri)
+            onBookSelected(book)
+        },
+        onBookLongPressed = libraryViewModel::requestBookActionsMenu,
+        onBookMenuDelete = { libraryViewModel.chooseDeleteFromBookActionsMenu() },
+        onBookMenuCancel = libraryViewModel::cancelBookActionsMenu,
+        onConfirmRemoveBook = libraryViewModel::confirmRemoveBook,
+        onCancelRemoveBook = libraryViewModel::cancelRemoveBook,
     )
 }
 

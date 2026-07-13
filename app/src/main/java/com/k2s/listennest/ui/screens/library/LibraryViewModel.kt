@@ -43,6 +43,7 @@ data class LibraryUiState(
     val pendingSelectionUris: Set<String> = emptySet(),
     val pendingBookMenuBook: LibraryBookItem? = null,
     val pendingRemovalBook: LibraryBookItem? = null,
+    val lastPlayedBookUri: String? = null,
     val isScanning: Boolean = false,
     val statusMessage: String = SELECT_A_FOLDER_PROMPT,
 ) {
@@ -272,6 +273,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.update {
                     it.copy(
                         selectedFolderLabel = snapshot.sourceFolderLabel,
+                        lastPlayedBookUri = snapshot.lastPlayedBookUri,
                         statusMessage = SELECT_A_FOLDER_PROMPT,
                     )
                 }
@@ -304,12 +306,26 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
                     savedBooks = savedBooks,
                     discoveredBooks = emptyList(),
                     pendingSelectionUris = snapshot.selectedBookUris.intersect(books.map { book -> book.folderUri }.toSet()),
+                    lastPlayedBookUri = snapshot.lastPlayedBookUri,
                     statusMessage = if (savedBooks.isEmpty()) {
                         "Your saved library is empty. Tap Scan library to choose books."
                     } else {
                         "Loaded ${savedBooks.size} saved book${if (savedBooks.size == 1) "" else "s"}."
                     },
                 )
+            }
+        }
+    }
+
+    fun markBookOpened(folderUri: String) {
+        if (folderUri.isBlank()) return
+
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                settingsStore.saveLastPlayedBookUri(folderUri)
+            }
+            _uiState.update {
+                it.copy(lastPlayedBookUri = folderUri)
             }
         }
     }

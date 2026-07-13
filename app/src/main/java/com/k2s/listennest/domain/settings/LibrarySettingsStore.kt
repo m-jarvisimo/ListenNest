@@ -6,11 +6,13 @@ private const val LIBRARY_PREFS_NAME = "library_settings"
 private const val KEY_SOURCE_FOLDER_URI = "source_folder_uri"
 private const val KEY_SOURCE_FOLDER_LABEL = "source_folder_label"
 private const val KEY_SELECTED_BOOK_URIS = "selected_book_uris"
+private const val KEY_LAST_PLAYED_BOOK_URI = "last_played_book_uri"
 
 data class LibrarySelectionSnapshot(
     val sourceFolderUri: String? = null,
     val sourceFolderLabel: String? = null,
     val selectedBookUris: Set<String> = emptySet(),
+    val lastPlayedBookUri: String? = null,
 )
 
 class LibrarySettingsStore(context: Context) {
@@ -26,6 +28,7 @@ class LibrarySettingsStore(context: Context) {
             selectedBookUris = prefs.getStringSet(KEY_SELECTED_BOOK_URIS, emptySet())
                 .orEmpty()
                 .toSet(),
+            lastPlayedBookUri = prefs.getString(KEY_LAST_PLAYED_BOOK_URI, null),
         )
     }
 
@@ -46,6 +49,13 @@ class LibrarySettingsStore(context: Context) {
             .remove(KEY_SOURCE_FOLDER_URI)
             .remove(KEY_SOURCE_FOLDER_LABEL)
             .remove(KEY_SELECTED_BOOK_URIS)
+            .remove(KEY_LAST_PLAYED_BOOK_URI)
+            .apply()
+    }
+
+    fun saveLastPlayedBookUri(bookUri: String) {
+        prefs.edit()
+            .putString(KEY_LAST_PLAYED_BOOK_URI, bookUri)
             .apply()
     }
 }

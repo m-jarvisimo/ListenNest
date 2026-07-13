@@ -59,7 +59,9 @@ fun PlayerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(book?.folderUri) {
-        viewModel.loadBook(book)
+        if (book?.folderUri != null && book.folderUri != uiState.folderUri) {
+            viewModel.loadBook(book)
+        }
     }
 
     PlayerScreenContent(
