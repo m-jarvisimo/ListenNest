@@ -39,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.k2s.listennest.ui.screens.library.LibraryScreen
 import com.k2s.listennest.ui.screens.library.LibraryViewModel
 import com.k2s.listennest.ui.screens.player.PlayerScreen
+import com.k2s.listennest.ui.screens.settings.AboutScreen
 import com.k2s.listennest.ui.screens.settings.ScanReviewScreen
 import com.k2s.listennest.ui.screens.settings.SettingsScreen
 
@@ -47,6 +48,7 @@ private enum class AppRoute {
     Player,
     Settings,
     Review,
+    About,
 }
 
 @Composable
@@ -168,6 +170,13 @@ fun NavGraph() {
                             route = AppRoute.Settings
                         },
                     )
+                    DropdownMenuItem(
+                        text = { Text("About") },
+                        onClick = {
+                            menuExpanded = false
+                            route = AppRoute.About
+                        },
+                    )
                 }
             }
         }
@@ -189,11 +198,15 @@ fun NavGraph() {
                 )
                 AppRoute.Player -> PlayerScreen(book = selectedBook)
                 AppRoute.Settings -> SettingsScreen(
+                    onOpenAbout = { route = AppRoute.About },
                     onScanComplete = { route = AppRoute.Review },
                 )
                 AppRoute.Review -> ScanReviewScreen(
                     onBackToSettings = { route = AppRoute.Settings },
                     onSaved = { route = AppRoute.Settings },
+                )
+                AppRoute.About -> AboutScreen(
+                    onBackToSettings = { route = AppRoute.Settings },
                 )
             }
         }

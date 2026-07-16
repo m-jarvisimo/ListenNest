@@ -43,6 +43,7 @@ private const val PHONE_STATE_PERMISSION = Manifest.permission.READ_PHONE_STATE
 
 @Composable
 fun SettingsScreen(
+    onOpenAbout: () -> Unit,
     onScanComplete: () -> Unit,
     libraryViewModel: LibraryViewModel = viewModel(),
     settingsViewModel: SettingsViewModel = viewModel(),
@@ -84,6 +85,7 @@ fun SettingsScreen(
         phoneStatePermissionGranted = phoneStatePermissionGranted,
         onChooseFolder = { folderPickerLauncher.launch(null) },
         onScanFolder = { libraryViewModel.scanLibrary(onScanComplete = onScanComplete) },
+        onOpenAbout = onOpenAbout,
         onPhoneCallPauseChanged = { enabled ->
             if (!enabled) {
                 settingsViewModel.setPhoneCallPauseEnabled(false)
@@ -104,6 +106,7 @@ internal fun SettingsScreenContent(
     phoneStatePermissionGranted: Boolean,
     onChooseFolder: () -> Unit,
     onScanFolder: () -> Unit,
+    onOpenAbout: () -> Unit,
     onPhoneCallPauseChanged: (Boolean) -> Unit,
 ) {
     Scaffold { paddingValues ->
@@ -184,6 +187,29 @@ internal fun SettingsScreenContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
+                        text = "About ListenNest",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = "View app version details and open the project on GitHub.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Button(
+                        onClick = onOpenAbout,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Open about page")
+                    }
+                }
+            }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
                         text = "Phone controls",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -237,6 +263,7 @@ private fun SettingsScreenPreview() {
             phoneStatePermissionGranted = true,
             onChooseFolder = {},
             onScanFolder = {},
+            onOpenAbout = {},
             onPhoneCallPauseChanged = {},
         )
     }
